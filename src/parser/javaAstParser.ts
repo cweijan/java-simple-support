@@ -1,14 +1,17 @@
 import { parse, createVisitor } from 'java-ast';
 import { TextDocument } from 'vscode';
 
+export type JavaSymbolKind = 'class' | 'method' | 'field' | 'parameter';
+
 export interface JavaSymbol {
     name: string;
-    kind: string;
+    kind: JavaSymbolKind;
     range: {
         start: number;
         end: number;
     };
     children?: JavaSymbol[];
+    identifierLocation?: number;
 }
 
 export class JavaAstParser {
@@ -56,15 +59,19 @@ export class JavaAstParser {
         const symbols: JavaSymbol[] = [];
         const visitor = createVisitor({
             visitMethodDeclaration: (ctx) => {
-                const name = ctx.identifier().text;
-                symbols.push({
+                const id = ctx.identifier();
+                const name = id.text;
+                const methodSymbol: JavaSymbol = {
                     name,
                     kind: 'method',
                     range: {
                         start: ctx.start.startIndex,
                         end: ctx.stop?.stopIndex || ctx.start.startIndex
-                    }
-                });
+                    },
+                    identifierLocation: id.start.startIndex,
+                    children: this.parseMethodParameters(ctx)
+                };
+                symbols.push(methodSymbol);
                 return 1;
             },
             visitFieldDeclaration: (ctx) => {
@@ -88,6 +95,30 @@ export class JavaAstParser {
         return symbols;
     }
 
+    private parseMethodParameters(ctx: any): JavaSymbol[] {
+        const parameters: JavaSymbol[] = [];
+        const formalParameters = ctx.formalParameters();
+        if (formalParameters) {
+            const parameterList = formalParameters.formalParameterList();
+            if (parameterList) {
+                for (const param of parameterList.formalParameter()) {
+                    const id = param.variableDeclaratorId();
+                    const name = id.identifier().text;
+                    parameters.push({
+                        name,
+                        kind: 'parameter',
+                        range: {
+                            start: param.start.startIndex,
+                            end: param.stop?.stopIndex || param.start.startIndex
+                        },
+                        identifierLocation: id.start.startIndex
+                    });
+                }
+            }
+        }
+        return parameters;
+    }
+
     public countMethods(source: string): number {
         const ast = parse(source);
         let count = 0;
@@ -108,25 +139,25 @@ export class JavaAstParser {
         return this.findSymbolRecursive(symbols, position, word);
     }
 
-    private findSymbolRecursive(symbols: JavaSymbol[], position: number, word: string, level = 0): JavaSymbol | undefined {
-        // 先查找当前范围的最小符号
+    private findSymbolRecursive(symbols: JavaSymbol[], position: number, word: string): JavaSymbol | undefined {
+        // 深度遍历
         for (const symbol of symbols) {
             if (position >= symbol.range.start && position <= symbol.range.end) {
                 if (symbol.children) {
-                    const child = this.findSymbolRecursive(symbol.children, position, word, ++level);
+                    const child = this.findSymbolRecursive(symbol.children, position, word);
                     if (child) { return child; }
                 }
                 if (symbol.name === word) {
                     return symbol;
                 }
+            } else if (symbol.name === word) {
+                return symbol;
             }
         }
-        if (level < 2) {
-            // 如果当前范围找不到, 则查找class或class下面的field/method
-            for (const symbol of symbols) {
-                if (symbol.name === word) {
-                    return symbol;
-                }
+        // 如果深度遍历找不到, 则进行广度遍历
+        for (const symbol of symbols) {
+            if (symbol.name === word) {
+                return symbol;
             }
         }
         return undefined;

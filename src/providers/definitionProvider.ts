@@ -23,7 +23,7 @@ export class JavaDefinitionProvider implements DefinitionProvider {
         if (symbol) {
             return new Location(
                 document.uri,
-                document.positionAt(symbol.range.start)
+                document.positionAt(symbol.identifierLocation || symbol.range.start)
             );
         }
 
