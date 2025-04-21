@@ -48,6 +48,8 @@ export class JavaOutlineProvider implements DocumentSymbolProvider {
                 return SymbolKind.Method;
             case 'field':
                 return SymbolKind.Field;
+            case 'enum':
+                return SymbolKind.Enum;
             default:
                 return SymbolKind.Variable;
         }

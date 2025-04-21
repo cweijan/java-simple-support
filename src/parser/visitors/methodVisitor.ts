@@ -19,6 +19,24 @@ export class MethodVisitor {
 
                 this.context.symbols.push(methodSymbol);
                 return 1;
+            },
+            visitInterfaceCommonBodyDeclaration: (ctx) => {
+                const methodSymbol = {
+                    ...createBaseSymbol('method', ctx, this.context.document),
+                    children: this.parseMethodParameters(ctx)
+                } as JavaSymbol;
+
+                this.context.symbols.push(methodSymbol);
+                return 1;
+            },
+            visitAnnotationMethodRest: (ctx) => {
+                const methodSymbol = {
+                    ...createBaseSymbol('method', ctx, this.context.document),
+                    children: []
+                } as JavaSymbol;
+
+                this.context.symbols.push(methodSymbol);
+                return 1;
             }
         });
     }
