@@ -1,5 +1,5 @@
 import { CompletionItemProvider, TextDocument, Position, CompletionItem, CompletionItemKind, CancellationToken } from 'vscode';
-import { JavaAstParser } from '../parser/javaAstParser';
+import { WorkspaceManager } from '../workspace/workspaceManager';
 
 export class JavaCompletionProvider implements CompletionItemProvider {
     private keywords = [
@@ -12,12 +12,14 @@ export class JavaCompletionProvider implements CompletionItemProvider {
         'this', 'throw', 'throws', 'transient', 'try', 'void', 'volatile', 'while'
     ];
 
+    constructor(private workspaceManager: WorkspaceManager) { }
+
     public async provideCompletionItems(
         document: TextDocument,
         position: Position,
         token: CancellationToken
     ): Promise<CompletionItem[]> {
-        const parser = new JavaAstParser(document);
+        const fileInfo = this.workspaceManager.getByDocument(document);
         const items: CompletionItem[] = [];
 
         // 添加关键字补全
@@ -26,10 +28,11 @@ export class JavaCompletionProvider implements CompletionItemProvider {
         });
 
         // 添加当前文档中的符号补全
-        const { symbols } = parser.parse();
-        symbols.forEach(symbol => {
-            items.push(new CompletionItem(symbol.name, this.getCompletionKind(symbol.kind)));
-        });
+        if (fileInfo) {
+            fileInfo.symbols.forEach(symbol => {
+                items.push(new CompletionItem(symbol.name, this.getCompletionKind(symbol.kind)));
+            });
+        }
 
         return items;
     }

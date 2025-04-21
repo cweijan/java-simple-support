@@ -1,13 +1,19 @@
 import { DocumentSymbolProvider, TextDocument, SymbolInformation, SymbolKind, CancellationToken, Location, Range } from 'vscode';
-import { JavaAstParser, JavaSymbol } from '../parser/javaAstParser';
+import { WorkspaceManager } from '../workspace/workspaceManager';
+import { JavaSymbol } from '../parser/javaAstParser';
 
 export class JavaOutlineProvider implements DocumentSymbolProvider {
+    constructor(private workspaceManager: WorkspaceManager) { }
+
     public async provideDocumentSymbols(
         document: TextDocument,
         token: CancellationToken
     ): Promise<SymbolInformation[]> {
-        const parser = new JavaAstParser(document);
-        const { symbols } = parser.parse();
+        const fileInfo = this.workspaceManager.getByDocument(document);
+        if (!fileInfo) {
+            return [];
+        }
+
         const result: SymbolInformation[] = [];
 
         const processSymbol = (symbol: JavaSymbol, containerName?: string) => {
@@ -30,7 +36,7 @@ export class JavaOutlineProvider implements DocumentSymbolProvider {
             }
         };
 
-        for (const symbol of symbols) {
+        for (const symbol of fileInfo.symbols) {
             processSymbol(symbol);
         }
 

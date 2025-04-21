@@ -159,48 +159,4 @@ export class JavaAstParser {
         return parameters;
     }
 
-    public countMethods(source: string): number {
-        const ast = parse(source);
-        let count = 0;
-
-        const visitor = createVisitor({
-            visitMethodDeclaration: (ctx) => {
-                count++;
-                return 1;
-            }
-        });
-
-        visitor.visit(ast);
-        return count;
-    }
-
-    public findSymbolAtPosition(position: number, word: string): JavaSymbol | undefined {
-        const { symbols } = this.parse();
-        return this.findSymbolRecursive(symbols, position, word);
-    }
-
-    private findSymbolRecursive(symbols: JavaSymbol[], position: number, word: string): JavaSymbol | undefined {
-        // 深度遍历
-        for (const symbol of symbols) {
-            if (position >= symbol.range.start && position <= symbol.range.end) {
-                if (symbol.children) {
-                    const child = this.findSymbolRecursive(symbol.children, position, word);
-                    if (child) { return child; }
-                }
-                if (symbol.name === word) {
-                    return symbol;
-                }
-            } else if (symbol.name === word) {
-                return symbol;
-            }
-        }
-        // 如果深度遍历找不到, 则进行广度遍历
-        for (const symbol of symbols) {
-            if (symbol.name === word) {
-                return symbol;
-            }
-        }
-        return undefined;
-    }
-
 } 
