@@ -2,7 +2,6 @@ import { DefinitionProvider, TextDocument, Position, Definition, Location, Cance
 import { WorkspaceManager } from '../workspace/workspaceManager';
 import { SymbolFinder } from './definition/symbolFinder';
 import { ImportClassFinder } from './definition/importClassFinder';
-import * as vscode from 'vscode';
 
 export class JavaDefinitionProvider implements DefinitionProvider {
     private symbolFinder: SymbolFinder;

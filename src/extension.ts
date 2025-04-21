@@ -1,5 +1,4 @@
 import { ExtensionContext, languages, workspace } from 'vscode';
-import { JavaCompletionProvider } from './providers/completionProvider';
 import { JavaDefinitionProvider } from './providers/definitionProvider';
 import { JavaOutlineProvider } from './providers/outlineProvider';
 import { WorkspaceManager } from './workspace/workspaceManager';

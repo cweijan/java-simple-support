@@ -1,5 +1,5 @@
 import { parse, createVisitor } from 'java-ast';
-import { TextDocument, Range, Location, Uri, Position } from 'vscode';
+import { TextDocument, Range, Position } from 'vscode';
 import { ClassVisitor } from './visitors/classVisitor';
 import { EnumVisitor } from './visitors/enumVisitor';
 import { InterfaceVisitor } from './visitors/interfaceVisitor';

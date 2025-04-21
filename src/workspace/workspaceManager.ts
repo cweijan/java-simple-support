@@ -1,7 +1,6 @@
 import { workspace, TextDocument, TextDocumentChangeEvent } from 'vscode';
 import { JavaFileCache } from './javaFileCache';
 import { JavaAstParser, JavaFileInfo } from '../parser/javaAstParser';
-import * as fs from 'fs';
 
 export class WorkspaceManager {
     private cache: JavaFileCache;

@@ -1,5 +1,4 @@
 import { JavaFileInfo } from '../parser/javaAstParser';
-import { TextDocument } from 'vscode';
 
 export class JavaFileCache {
     private pathCache: { [key: string]: JavaFileInfo } = {};
