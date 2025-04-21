@@ -10,7 +10,17 @@ export class JavaFileCache {
     }
 
     public get(modulePath: string, qualifiedName: string): JavaFileInfo | undefined {
-        return this.cache[modulePath]?.[qualifiedName];
+        if (this.cache[modulePath]?.[qualifiedName]) {
+            return this.cache[modulePath][qualifiedName];
+        }
+
+        for (const module in this.cache) {
+            if (module !== modulePath && this.cache[module][qualifiedName]) {
+                return this.cache[module][qualifiedName];
+            }
+        }
+
+        return undefined;
     }
 
     public set(filePath: string, modulePath: string, qualifiedName: string, info: JavaFileInfo): void {
