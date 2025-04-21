@@ -17,7 +17,11 @@ export class WorkspaceManager {
         console.log(`Found ${javaFiles.length} Java files, starting parsing...`);
         for (const file of javaFiles) {
             const document = await workspace.openTextDocument(file);
-            this.updateCacheForDocument(document);
+            try {
+                this.updateCacheForDocument(document);
+            } catch (error) {
+                console.error(`Error parsing ${file.fsPath}: ${error}`);
+            }
         }
         console.log(`Workspace initialization completed in ${Date.now() - startTime}ms`);
     }
@@ -25,9 +29,12 @@ export class WorkspaceManager {
     public updateCacheForDocument(document: TextDocument): JavaFileInfo {
         const parser = new JavaAstParser(document);
         const fileInfo = parser.parse();
+        if (!fileInfo) {
+            return undefined;
+        }
         const filePath = document.uri.fsPath;
 
-        this.cache.set(filePath, fileInfo.modulePath, fileInfo.className, fileInfo);
+        this.cache.set(filePath, fileInfo.modulePath, fileInfo.qualifiedName, fileInfo);
         return fileInfo;
     }
 
@@ -37,8 +44,8 @@ export class WorkspaceManager {
         }
     }
 
-    public getFileInfo(filePath: string): JavaFileInfo | undefined {
-        return this.cache.getByFilePath(filePath);
+    public get(modulePath: string, qualifiedName: string): JavaFileInfo | undefined {
+        return this.cache.get(modulePath, qualifiedName);
     }
 
     public getByDocument(document: TextDocument): JavaFileInfo | undefined {

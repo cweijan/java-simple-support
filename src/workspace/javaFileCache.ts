@@ -10,21 +10,21 @@ export class JavaFileCache {
         return this.pathCache[filePath];
     }
 
-    public get(modulePath: string, className: string): JavaFileInfo | undefined {
-        return this.cache[modulePath]?.[className];
+    public get(modulePath: string, qualifiedName: string): JavaFileInfo | undefined {
+        return this.cache[modulePath]?.[qualifiedName];
     }
 
-    public set(filePath: string, modulePath: string, className: string, info: JavaFileInfo): void {
+    public set(filePath: string, modulePath: string, qualifiedName: string, info: JavaFileInfo): void {
         if (!this.cache[modulePath]) {
             this.cache[modulePath] = {};
         }
         this.pathCache[filePath] = info;
-        this.cache[modulePath][className] = info;
+        this.cache[modulePath][qualifiedName] = info;
     }
 
-    public delete(modulePath: string, className: string): void {
+    public delete(modulePath: string, qualifiedName: string): void {
         if (this.cache[modulePath]) {
-            delete this.cache[modulePath][className];
+            delete this.cache[modulePath][qualifiedName];
         }
     }
 

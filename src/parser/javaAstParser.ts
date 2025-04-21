@@ -1,25 +1,29 @@
 import { parse, createVisitor } from 'java-ast';
-import { TextDocument } from 'vscode';
+import { TextDocument, Range, Location, Uri, Position } from 'vscode';
 
 export type JavaSymbolKind = 'class' | 'method' | 'field' | 'parameter';
+
+export interface ImportInfo {
+    identifier: string;
+    qualifiedName: string;
+}
 
 export interface JavaFileInfo {
     modulePath: string;
     packageName: string;
-    imports: string[];
-    className: string;
+    importInfos: ImportInfo[];
+    classSymbol: JavaSymbol;
+    qualifiedName: string;
     symbols: JavaSymbol[];
+    filePath: string;
 }
 
 export interface JavaSymbol {
     name: string;
     kind: JavaSymbolKind;
-    range: {
-        start: number;
-        end: number;
-    };
+    range: Range;
     children?: JavaSymbol[];
-    identifierLocation?: number;
+    identifierLocation?: Position;
 }
 
 export class JavaAstParser {
@@ -46,9 +50,9 @@ export class JavaAstParser {
         const text = this.document.getText();
         const ast = parse(text);
 
-        let className = '';
+        let classSymbol: JavaSymbol;
         let packageName = '';
-        const imports: string[] = [];
+        const importInfos: ImportInfo[] = [];
         const symbols: JavaSymbol[] = [];
 
         const visitor = createVisitor({
@@ -57,18 +61,24 @@ export class JavaAstParser {
                 return 1;
             },
             visitImportDeclaration: (ctx) => {
-                imports.push(ctx.qualifiedName().text);
+                const qualifiedName = ctx.qualifiedName().text;
+                importInfos.push({
+                    identifier: qualifiedName.substring(qualifiedName.lastIndexOf('.') + 1),
+                    qualifiedName: qualifiedName
+                });
                 return 1;
             },
             visitClassDeclaration: (ctx) => {
-                className = ctx.identifier().text;
-                const classSymbol: JavaSymbol = {
+                const className = ctx.identifier().text;
+                const startPos = this.document.positionAt(ctx.start.startIndex);
+                const endPos = this.document.positionAt(ctx.stop?.stopIndex || ctx.start.startIndex);
+                const identifierPos = this.document.positionAt(ctx.identifier().start.startIndex);
+
+                classSymbol = {
                     name: className,
                     kind: 'class',
-                    range: {
-                        start: ctx.start.startIndex,
-                        end: ctx.stop?.stopIndex || ctx.start.startIndex
-                    },
+                    range: new Range(startPos, endPos),
+                    identifierLocation: identifierPos,
                     children: []
                 };
                 symbols.push(classSymbol);
@@ -81,17 +91,35 @@ export class JavaAstParser {
                     classSymbol.children = classBodySymbols;
                 }
                 return 1;
-            }
+            },
+            visitEnumDeclaration: (ctx) => {
+                console.log('visitEnumDeclaration');
+                return 1;
+            },
+            visitInterfaceDeclaration: (ctx) => {
+                console.log('visitInterfaceDeclaration');
+                return 1;
+            },
+            visitAnnotationTypeDeclaration: (ctx) => {
+                console.log('visitAnnotationTypeDeclaration');
+                return 1;
+            },
         });
 
         visitor.visit(ast);
         const modulePath = this.calculateModulePath(this.document.uri.fsPath, packageName);
+        if (this.document.uri.fsPath.includes('Mapper')) {
+            console.log('test');
+        }
+        if (!classSymbol) return undefined;
         return {
             modulePath,
             packageName,
-            imports,
-            className: `${packageName}.${className}`,
-            symbols
+            importInfos,
+            classSymbol,
+            qualifiedName: `${packageName}.${classSymbol.name}`,
+            symbols,
+            filePath: this.document.uri.fsPath
         };
     }
 
@@ -101,14 +129,15 @@ export class JavaAstParser {
             visitMethodDeclaration: (ctx) => {
                 const id = ctx.identifier();
                 const name = id.text;
+                const startPos = this.document.positionAt(ctx.start.startIndex);
+                const endPos = this.document.positionAt(ctx.stop?.stopIndex || ctx.start.startIndex);
+                const identifierPos = this.document.positionAt(id.start.startIndex);
+
                 const methodSymbol: JavaSymbol = {
                     name,
                     kind: 'method',
-                    range: {
-                        start: ctx.start.startIndex,
-                        end: ctx.stop?.stopIndex || ctx.start.startIndex
-                    },
-                    identifierLocation: id.start.startIndex,
+                    range: new Range(startPos, endPos),
+                    identifierLocation: identifierPos,
                     children: this.parseMethodParameters(ctx)
                 };
                 symbols.push(methodSymbol);
@@ -118,13 +147,15 @@ export class JavaAstParser {
                 const variableDeclarators = ctx.variableDeclarators();
                 for (const declarator of variableDeclarators.variableDeclarator()) {
                     const name = declarator.variableDeclaratorId().identifier().text;
+                    const startPos = this.document.positionAt(declarator.start.startIndex);
+                    const endPos = this.document.positionAt(declarator.stop?.stopIndex || declarator.start.startIndex);
+                    const identifierPos = this.document.positionAt(declarator.variableDeclaratorId().start.startIndex);
+
                     symbols.push({
                         name,
                         kind: 'field',
-                        range: {
-                            start: declarator.start.startIndex,
-                            end: declarator.stop?.stopIndex || declarator.start.startIndex
-                        }
+                        range: new Range(startPos, endPos),
+                        identifierLocation: identifierPos
                     });
                 }
                 return 1;
@@ -144,14 +175,15 @@ export class JavaAstParser {
                 for (const param of parameterList.formalParameter()) {
                     const id = param.variableDeclaratorId();
                     const name = id.identifier().text;
+                    const startPos = this.document.positionAt(param.start.startIndex);
+                    const endPos = this.document.positionAt(param.stop?.stopIndex || param.start.startIndex);
+                    const identifierPos = this.document.positionAt(id.start.startIndex);
+
                     parameters.push({
                         name,
                         kind: 'parameter',
-                        range: {
-                            start: param.start.startIndex,
-                            end: param.stop?.stopIndex || param.start.startIndex
-                        },
-                        identifierLocation: id.start.startIndex
+                        range: new Range(startPos, endPos),
+                        identifierLocation: identifierPos
                     });
                 }
             }

@@ -1,70 +1,54 @@
 import { DefinitionProvider, TextDocument, Position, Definition, Location, CancellationToken } from 'vscode';
 import { WorkspaceManager } from '../workspace/workspaceManager';
-import { JavaFileInfo, JavaSymbol } from '../parser/javaAstParser';
+import { SymbolFinder } from './definition/symbolFinder';
+import { ImportClassFinder } from './definition/importClassFinder';
+import * as vscode from 'vscode';
 
 export class JavaDefinitionProvider implements DefinitionProvider {
-    constructor(private workspaceManager: WorkspaceManager) { }
+    private symbolFinder: SymbolFinder;
+    private importClassFinder: ImportClassFinder;
 
-    public async provideDefinition(
-        document: TextDocument,
-        position: Position,
-        token: CancellationToken
-    ): Promise<Definition | undefined> {
+    constructor(private workspaceManager: WorkspaceManager) {
+        this.symbolFinder = new SymbolFinder();
+        this.importClassFinder = new ImportClassFinder(workspaceManager);
+    }
+
+    public async provideDefinition(document: TextDocument, position: Position, token: CancellationToken): Promise<Definition | undefined> {
         const fileInfo = this.workspaceManager.getByDocument(document);
         if (!fileInfo) {
             return undefined;
         }
 
-        const offset = document.offsetAt(position);
-
-        // 获取当前光标位置的单词
         const wordRange = document.getWordRangeAtPosition(position);
         if (!wordRange) {
             return undefined;
         }
+
         const word = document.getText(wordRange);
+        if (['String', 'Integer', 'Boolean', 'Double', 'Float', 'Long', 'Short', 'Byte', 'Character', 'Void', 'Null'].includes(word)) {
+            return undefined;
+        }
 
-        // 根据单词和位置查找符号
-        const symbol = this.findSymbolAtPosition(fileInfo, offset, word);
+        // Check if the previous character is a dot
+        // Only proceed if we're not at the start of the line
+        // if (wordRange.start.character > 1) {
+        //     const prevCharPosition = new Position(position.line, wordRange.start.character - 1);
+        //     const prevCharRange = new vscode.Range(prevCharPosition, prevCharPosition.translate(0, 1));
+        //     const prevChar = document.getText(prevCharRange);
 
-        if (symbol) {
+        //     if (prevChar === '.') {
+        //         return undefined;
+        //     }
+        // }
+
+        const localSymbol = this.symbolFinder.findSymbolAtPosition(fileInfo, position, word);
+        if (localSymbol) {
             return new Location(
                 document.uri,
-                document.positionAt(symbol.identifierLocation || symbol.range.start)
+                localSymbol.identifierLocation || localSymbol.range.start
             );
         }
 
-        return undefined;
+        return this.importClassFinder.findImportedClass(fileInfo, word);
     }
-
-    private findSymbolAtPosition(fileInfo: JavaFileInfo, position: number, word: string): JavaSymbol | undefined {
-        const { symbols } = fileInfo;
-        return this.findSymbolRecursive(symbols, position, word);
-    }
-
-    private findSymbolRecursive(symbols: JavaSymbol[], position: number, word: string): JavaSymbol | undefined {
-        // 深度遍历
-        for (const symbol of symbols) {
-            if (position >= symbol.range.start && position <= symbol.range.end) {
-                if (symbol.children) {
-                    const child = this.findSymbolRecursive(symbol.children, position, word);
-                    if (child) { return child; }
-                }
-                if (symbol.name === word) {
-                    return symbol;
-                }
-            } else if (symbol.name === word) {
-                return symbol;
-            }
-        }
-        // 如果深度遍历找不到, 则进行广度遍历
-        for (const symbol of symbols) {
-            if (symbol.name === word) {
-                return symbol;
-            }
-        }
-        return undefined;
-    }
-
-
 }

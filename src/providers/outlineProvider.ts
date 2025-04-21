@@ -1,4 +1,4 @@
-import { DocumentSymbolProvider, TextDocument, SymbolInformation, SymbolKind, CancellationToken, Location, Range } from 'vscode';
+import { DocumentSymbolProvider, TextDocument, SymbolInformation, SymbolKind, CancellationToken, Location } from 'vscode';
 import { WorkspaceManager } from '../workspace/workspaceManager';
 import { JavaSymbol } from '../parser/javaAstParser';
 
@@ -22,10 +22,7 @@ export class JavaOutlineProvider implements DocumentSymbolProvider {
                 symbol.name,
                 kind,
                 containerName || null,
-                new Location(document.uri, new Range(
-                    document.positionAt(symbol.range.start),
-                    document.positionAt(symbol.range.end)
-                ))
+                new Location(document.uri, symbol.range)
             );
             result.push(symbolInfo);
 
