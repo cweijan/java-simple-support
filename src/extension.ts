@@ -14,7 +14,7 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(
 		languages.registerDocumentSymbolProvider(selector, new JavaOutlineProvider()),
 		languages.registerDefinitionProvider(selector, new JavaDefinitionProvider()),
-		languages.registerCompletionItemProvider(selector, new JavaCompletionProvider()),
+		// languages.registerCompletionItemProvider(selector, new JavaCompletionProvider()),
 		documentChange
 	);
 }

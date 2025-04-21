@@ -1,23 +1,37 @@
 import { DocumentSymbolProvider, TextDocument, SymbolInformation, SymbolKind, CancellationToken, Location } from 'vscode';
-import { JavaParser, JavaSymbol } from '../parser/javaParser';
+import { JavaAstParser, JavaSymbol } from '../parser/javaAstParser';
 
 export class JavaOutlineProvider implements DocumentSymbolProvider {
     public async provideDocumentSymbols(
         document: TextDocument,
         token: CancellationToken
     ): Promise<SymbolInformation[]> {
-        const parser = new JavaParser(document);
+        const parser = new JavaAstParser(document);
         const symbols = parser.parse();
+        const result: SymbolInformation[] = [];
 
-        return symbols.map(symbol => {
+        const processSymbol = (symbol: JavaSymbol, containerName?: string) => {
             const kind = this.getSymbolKind(symbol.kind);
-            return new SymbolInformation(
+            const symbolInfo = new SymbolInformation(
                 symbol.name,
                 kind,
-                null,
+                containerName || null,
                 new Location(document.uri, document.positionAt(symbol.range.start))
             );
-        });
+            result.push(symbolInfo);
+
+            if (symbol.children) {
+                for (const child of symbol.children) {
+                    processSymbol(child, symbol.name);
+                }
+            }
+        };
+
+        for (const symbol of symbols) {
+            processSymbol(symbol);
+        }
+
+        return result;
     }
 
     private getSymbolKind(kind: string): SymbolKind {

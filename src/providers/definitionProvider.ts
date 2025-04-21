@@ -1,5 +1,5 @@
 import { DefinitionProvider, TextDocument, Position, Definition, Location, CancellationToken } from 'vscode';
-import { JavaParser } from '../parser/javaParser';
+import { JavaAstParser } from '../parser/javaAstParser';
 
 export class JavaDefinitionProvider implements DefinitionProvider {
     public async provideDefinition(
@@ -7,9 +7,18 @@ export class JavaDefinitionProvider implements DefinitionProvider {
         position: Position,
         token: CancellationToken
     ): Promise<Definition | undefined> {
-        const parser = new JavaParser(document);
+        const parser = new JavaAstParser(document);
         const offset = document.offsetAt(position);
-        const symbol = parser.findSymbolAtPosition(offset);
+
+        // 获取当前光标位置的单词
+        const wordRange = document.getWordRangeAtPosition(position);
+        if (!wordRange) {
+            return undefined;
+        }
+        const word = document.getText(wordRange);
+
+        // 根据单词和位置查找符号
+        const symbol = parser.findSymbolAtPosition(offset, word);
 
         if (symbol) {
             return new Location(

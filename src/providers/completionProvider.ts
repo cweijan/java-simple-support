@@ -1,5 +1,5 @@
 import { CompletionItemProvider, TextDocument, Position, CompletionItem, CompletionItemKind, CancellationToken } from 'vscode';
-import { JavaParser } from '../parser/javaParser';
+import { JavaAstParser } from '../parser/javaAstParser';
 
 export class JavaCompletionProvider implements CompletionItemProvider {
     private keywords = [
@@ -17,7 +17,7 @@ export class JavaCompletionProvider implements CompletionItemProvider {
         position: Position,
         token: CancellationToken
     ): Promise<CompletionItem[]> {
-        const parser = new JavaParser(document);
+        const parser = new JavaAstParser(document);
         const items: CompletionItem[] = [];
 
         // 添加关键字补全
