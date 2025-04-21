@@ -1,0 +1,44 @@
+import { createVisitor } from 'java-ast';
+import { JavaSymbol } from '../javaAstParser';
+import { BaseVisitorContext, createBaseSymbol } from './baseVisitor';
+import { MethodVisitor } from './methodVisitor';
+
+export class AnnotationVisitor {
+    private context: BaseVisitorContext;
+    private methodVisitor: MethodVisitor;
+
+    constructor(context: BaseVisitorContext) {
+        this.context = context;
+        this.methodVisitor = new MethodVisitor(context);
+    }
+
+    public createVisitor() {
+        return createVisitor({
+            visitAnnotationTypeDeclaration: (ctx) => {
+                const annotationSymbol = {
+                    ...createBaseSymbol('annotation', ctx, this.context.document),
+                    children: []
+                } as JavaSymbol;
+
+                this.context.symbols.push(annotationSymbol);
+
+                // 访问注解体，收集注解元素
+                const annotationBody = ctx.annotationTypeBody();
+                if (annotationBody) {
+                    const annotationBodySymbols = this.parseAnnotationBody(annotationBody);
+                    annotationSymbol.children = annotationBodySymbols;
+                }
+                return 1;
+            }
+        });
+    }
+
+    private parseAnnotationBody(annotationBody: any): JavaSymbol[] {
+        const symbols: JavaSymbol[] = [];
+        const methodVisitor = this.methodVisitor.createVisitor();
+
+        methodVisitor.visit(annotationBody);
+
+        return symbols;
+    }
+} 

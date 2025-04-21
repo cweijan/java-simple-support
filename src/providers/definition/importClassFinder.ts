@@ -29,10 +29,10 @@ export class ImportClassFinder {
     }
 
     private createLocation(fileInfo: JavaFileInfo): Location {
-        const startPos = fileInfo.classSymbol.identifierLocation;
+        const startPos = fileInfo.typeSymbol.identifierLocation;
         const endPos = new Position(
             startPos.line,
-            startPos.character + fileInfo.classSymbol.name.length
+            startPos.character + fileInfo.typeSymbol.name.length
         );
         return new Location(
             Uri.file(fileInfo.filePath),

@@ -1,9 +1,12 @@
 import { parse, createVisitor } from 'java-ast';
 import { TextDocument, Range, Location, Uri, Position } from 'vscode';
 import { ClassVisitor } from './visitors/classVisitor';
+import { EnumVisitor } from './visitors/enumVisitor';
+import { InterfaceVisitor } from './visitors/interfaceVisitor';
+import { AnnotationVisitor } from './visitors/annotationVisitor';
 import { BaseVisitorContext } from './visitors/baseVisitor';
 
-export type JavaSymbolKind = 'class' | 'method' | 'field' | 'parameter';
+export type JavaSymbolKind = 'class' | 'method' | 'field' | 'parameter' | 'enum' | 'interface' | 'annotation';
 
 export interface ImportInfo {
     identifier: string;
@@ -14,7 +17,7 @@ export interface JavaFileInfo {
     modulePath: string;
     packageName: string;
     importInfos: ImportInfo[];
-    classSymbol: JavaSymbol;
+    typeSymbol: JavaSymbol;
     qualifiedName: string;
     symbols: JavaSymbol[];
     filePath: string;
@@ -52,7 +55,7 @@ export class JavaAstParser {
         const text = this.document.getText();
         const ast = parse(text);
 
-        let classSymbol: JavaSymbol;
+        let typeSymbol: JavaSymbol;
         let packageName = '';
         const importInfos: ImportInfo[] = [];
         const symbols: JavaSymbol[] = [];
@@ -63,6 +66,10 @@ export class JavaAstParser {
         };
 
         const classVisitor = new ClassVisitor(context);
+        const enumVisitor = new EnumVisitor(context);
+        const interfaceVisitor = new InterfaceVisitor(context);
+        const annotationVisitor = new AnnotationVisitor(context);
+
         const visitor = createVisitor({
             visitPackageDeclaration: (ctx) => {
                 packageName = ctx.qualifiedName().text;
@@ -80,20 +87,22 @@ export class JavaAstParser {
 
         visitor.visit(ast);
         classVisitor.createVisitor().visit(ast);
+        enumVisitor.createVisitor().visit(ast);
+        interfaceVisitor.createVisitor().visit(ast);
+        annotationVisitor.createVisitor().visit(ast);
 
         const modulePath = this.calculateModulePath(this.document.uri.fsPath, packageName);
-        classSymbol = symbols.find(s => s.kind === 'class');
+        typeSymbol = symbols.find(s => ['class', 'enum', 'interface', 'annotation'].includes(s.kind));
 
-        if (!classSymbol) return undefined;
+        if (!typeSymbol) return undefined;
         return {
             modulePath,
             packageName,
             importInfos,
-            classSymbol,
-            qualifiedName: `${packageName}.${classSymbol.name}`,
+            typeSymbol,
+            qualifiedName: `${packageName}.${typeSymbol.name}`,
             symbols,
             filePath: this.document.uri.fsPath
         };
     }
-
 } 
