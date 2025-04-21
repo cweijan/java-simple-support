@@ -3,6 +3,14 @@ import { TextDocument } from 'vscode';
 
 export type JavaSymbolKind = 'class' | 'method' | 'field' | 'parameter';
 
+export interface JavaFileInfo {
+    modulePath: string;
+    packageName: string;
+    imports: string[];
+    className: string;
+    symbols: JavaSymbol[];
+}
+
 export interface JavaSymbol {
     name: string;
     kind: JavaSymbolKind;
@@ -21,16 +29,41 @@ export class JavaAstParser {
         this.document = document;
     }
 
-    public parse(): JavaSymbol[] {
+    private calculateModulePath(filePath: string, packageName: string): string {
+        filePath = filePath.replaceAll('\\', '/').replace('src/main/java/', '');
+        if (!packageName) {
+            return filePath;
+        }
+        const packagePath = packageName.replace(/\./g, '/');
+        const fileDir = filePath.substring(0, filePath.lastIndexOf('/'));
+        if (fileDir.endsWith(packagePath)) {
+            return fileDir.substring(0, fileDir.length - packagePath.length);
+        }
+        return fileDir;
+    }
+
+    public parse(): JavaFileInfo {
         const text = this.document.getText();
         const ast = parse(text);
 
+        let className = '';
+        let packageName = '';
+        const imports: string[] = [];
         const symbols: JavaSymbol[] = [];
+
         const visitor = createVisitor({
+            visitPackageDeclaration: (ctx) => {
+                packageName = ctx.qualifiedName().text;
+                return 1;
+            },
+            visitImportDeclaration: (ctx) => {
+                imports.push(ctx.qualifiedName().text);
+                return 1;
+            },
             visitClassDeclaration: (ctx) => {
-                const name = ctx.identifier().text;
+                className = ctx.identifier().text;
                 const classSymbol: JavaSymbol = {
-                    name,
+                    name: className,
                     kind: 'class',
                     range: {
                         start: ctx.start.startIndex,
@@ -52,7 +85,14 @@ export class JavaAstParser {
         });
 
         visitor.visit(ast);
-        return symbols;
+        const modulePath = this.calculateModulePath(this.document.uri.fsPath, packageName);
+        return {
+            modulePath,
+            packageName,
+            imports,
+            className: `${packageName}.${className}`,
+            symbols
+        };
     }
 
     private parseClassBody(classBody: any): JavaSymbol[] {
@@ -135,7 +175,7 @@ export class JavaAstParser {
     }
 
     public findSymbolAtPosition(position: number, word: string): JavaSymbol | undefined {
-        const symbols = this.parse();
+        const { symbols } = this.parse();
         return this.findSymbolRecursive(symbols, position, word);
     }
 

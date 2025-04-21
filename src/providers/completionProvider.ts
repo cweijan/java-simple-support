@@ -26,7 +26,7 @@ export class JavaCompletionProvider implements CompletionItemProvider {
         });
 
         // 添加当前文档中的符号补全
-        const symbols = parser.parse();
+        const { symbols } = parser.parse();
         symbols.forEach(symbol => {
             items.push(new CompletionItem(symbol.name, this.getCompletionKind(symbol.kind)));
         });

@@ -7,7 +7,7 @@ export class JavaOutlineProvider implements DocumentSymbolProvider {
         token: CancellationToken
     ): Promise<SymbolInformation[]> {
         const parser = new JavaAstParser(document);
-        const symbols = parser.parse();
+        const { symbols } = parser.parse();
         const result: SymbolInformation[] = [];
 
         const processSymbol = (symbol: JavaSymbol, containerName?: string) => {
