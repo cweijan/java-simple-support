@@ -1,4 +1,4 @@
-import { createVisitor, MethodDeclarationContext, ConstructorDeclarationContext, InterfaceCommonBodyDeclarationContext } from 'java-ast';
+import { createVisitor, MethodDeclarationContext, ConstructorDeclarationContext, InterfaceCommonBodyDeclarationContext } from '@/parser/java-ast';
 import { JavaSymbol } from '../../javaAstParser';
 import { MemberVisitor } from './memberVisitor';
 

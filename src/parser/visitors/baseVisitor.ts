@@ -1,7 +1,7 @@
 import { TextDocument, Range } from 'vscode';
 import { JavaSymbol, JavaSymbolKind } from '../javaAstParser';
 import { ParserRuleContext } from 'antlr4ts';
-import { IdentifierContext } from 'java-ast';
+import { IdentifierContext } from '@/parser/java-ast';
 
 export interface BaseVisitorContext {
     document: TextDocument;

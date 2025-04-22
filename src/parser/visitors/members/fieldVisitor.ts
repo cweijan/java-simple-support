@@ -1,4 +1,4 @@
-import { createVisitor } from 'java-ast';
+import { createVisitor } from '@/parser/java-ast';
 import { MemberVisitor } from './memberVisitor';
 
 export class FieldVisitor extends MemberVisitor {
