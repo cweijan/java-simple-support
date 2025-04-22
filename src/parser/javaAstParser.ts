@@ -22,10 +22,12 @@ export interface JavaFileInfo {
     qualifiedName: string;
     symbols: JavaSymbol[];
     filePath: string;
+    uri: string;
 }
 
 export interface JavaSymbol {
     name: string;
+    typeName?: string;
     kind: JavaSymbolKind;
     range: Range;
     children?: JavaSymbol[];
@@ -105,7 +107,8 @@ export class JavaAstParser {
             typeSymbol,
             qualifiedName: `${packageName}.${typeSymbol.name}`,
             symbols,
-            filePath: this.document.uri.fsPath
+            filePath: this.document.uri.fsPath,
+            uri: this.document.uri.toString()
         };
     }
 } 
