@@ -2,6 +2,7 @@ import { ExtensionContext, languages, workspace } from 'vscode';
 import { JavaDefinitionProvider } from './providers/definitionProvider';
 import { JavaOutlineProvider } from './providers/outlineProvider';
 import { JavaFoldingProvider } from './providers/foldingProvider';
+import { JavaTypeDefinitionProvider } from './providers/typeDefinitionProvider';
 import { WorkspaceManager } from './workspace/workspaceManager';
 
 export function activate(context: ExtensionContext) {
@@ -20,6 +21,7 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(
 		languages.registerDocumentSymbolProvider(selector, new JavaOutlineProvider(workspaceManager)),
 		languages.registerDefinitionProvider(selector, new JavaDefinitionProvider(workspaceManager)),
+		languages.registerTypeDefinitionProvider(selector, new JavaTypeDefinitionProvider(workspaceManager)),
 		languages.registerFoldingRangeProvider(selector, new JavaFoldingProvider(workspaceManager)),
 		// languages.registerCompletionItemProvider(selector, new JavaCompletionProvider(workspaceManager)),
 		documentChange

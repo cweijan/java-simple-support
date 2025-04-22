@@ -5,16 +5,6 @@ export class SymbolFinder {
     public findSymbolAtPosition(fileInfo: JavaFileInfo, position: Position, word: string): JavaSymbol | undefined {
         const { symbols } = fileInfo;
         const symbol = this.findSymbolRecursive(symbols, position, word);
-        if (symbol) {
-            // 判断position是否在identity区间，如果是返回null
-            if (position.isAfterOrEqual(symbol.identifierLocation) &&
-                position.isBeforeOrEqual(new Position(
-                    symbol.identifierLocation.line,
-                    symbol.identifierLocation.character + symbol.name.length
-                ))) {
-                return null;
-            }
-        }
         return symbol;
     }
 

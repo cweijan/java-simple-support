@@ -51,6 +51,14 @@ export class JavaDefinitionProvider implements DefinitionProvider {
 
         const localSymbol = this.symbolFinder.findSymbolAtPosition(fileInfo, position, word);
         if (localSymbol) {
+            // 判断position是否在identity区间，如果是返回null
+            if (position.isAfterOrEqual(localSymbol.identifierLocation) &&
+                position.isBeforeOrEqual(new Position(
+                    localSymbol.identifierLocation.line,
+                    localSymbol.identifierLocation.character + localSymbol.name.length
+                ))) {
+                return null;
+            }
             return new Location(
                 document.uri,
                 localSymbol.identifierLocation || localSymbol.range.start
