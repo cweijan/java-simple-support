@@ -14,7 +14,10 @@ export class MethodVisitor {
             visitMethodDeclaration: (ctx) => {
                 const methodSymbol = {
                     ...createBaseSymbol('method', ctx, this.context.document),
-                    children: this.parseMethodParameters(ctx)
+                    children: [
+                        ...this.parseMethodParameters(ctx),
+                        ...this.parseLocalVariables(ctx)
+                    ]
                 } as JavaSymbol;
 
                 this.context.symbols.push(methodSymbol);
@@ -55,5 +58,30 @@ export class MethodVisitor {
             }
         }
         return parameters;
+    }
+
+    private parseLocalVariables(ctx: MethodDeclarationContext): JavaSymbol[] {
+        const localVariables: JavaSymbol[] = [];
+        const block = ctx.methodBody()?.block();
+        if (block) {
+            for (const blockStatement of block.blockStatement()) {
+                const localVariableDeclaration = blockStatement.localVariableDeclaration();
+                if (localVariableDeclaration) {
+                    const variableDeclarators = localVariableDeclaration.variableDeclarators();
+                    if (variableDeclarators) {
+                        for (const declarator of variableDeclarators.variableDeclarator()) {
+                            const variableDeclaratorId = declarator.variableDeclaratorId();
+                            if (variableDeclaratorId) {
+                                const localVariableSymbol = {
+                                    ...createBaseSymbol('localVariable', variableDeclaratorId, this.context.document)
+                                } as JavaSymbol;
+                                localVariables.push(localVariableSymbol);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return localVariables;
     }
 } 

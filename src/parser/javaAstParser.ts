@@ -6,7 +6,7 @@ import { InterfaceVisitor } from './visitors/interfaceVisitor';
 import { AnnotationVisitor } from './visitors/annotationVisitor';
 import { BaseVisitorContext } from './visitors/baseVisitor';
 
-export type JavaSymbolKind = 'class' | 'method' | 'field' | 'parameter' | 'enum' | 'interface' | 'annotation';
+export type JavaSymbolKind = 'class' | 'method' | 'field' | 'parameter' | 'enum' | 'interface' | 'annotation' | 'localVariable';
 
 export interface ImportInfo {
     identifier: string;
