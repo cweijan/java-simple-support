@@ -10,10 +10,18 @@
     "Programming Languages"
   ],
   "activationEvents": [
+    "onLanguage:xml",
     "onLanguage:java"
   ],
   "main": "./dist/extension.js",
-  "contributes": {},
+  "contributes": {
+    "commands": [
+      {
+        "command": "java-simple-support.gotoMapper",
+        "title": "Go to Mapper"
+      }
+    ]
+  },
   "scripts": {
     "dev": "node esbuild.js --watch",
     "build": "node esbuild.js --production",
@@ -31,6 +39,7 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
+    "fast-xml-parser": "^5.2.0",
     "java-ast": "^0.4.1"
   }
 }

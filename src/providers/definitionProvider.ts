@@ -3,13 +3,17 @@ import { WorkspaceManager } from '../workspace/workspaceManager';
 import { SymbolFinder } from './definition/symbolFinder';
 import { ImportClassFinder } from './definition/importClassFinder';
 import { MemberFinder } from './definition/memberFinder';
+import { MapperManager } from '../workspace/mapperManager';
 
 export class JavaDefinitionProvider implements DefinitionProvider {
     private symbolFinder: SymbolFinder;
     private importClassFinder: ImportClassFinder;
     private memberFinder: MemberFinder;
 
-    constructor(private workspaceManager: WorkspaceManager) {
+    constructor(
+        private workspaceManager: WorkspaceManager,
+        private mapperManager: MapperManager
+    ) {
         this.symbolFinder = new SymbolFinder();
         this.importClassFinder = new ImportClassFinder(workspaceManager);
         this.memberFinder = new MemberFinder(workspaceManager);
@@ -51,14 +55,26 @@ export class JavaDefinitionProvider implements DefinitionProvider {
 
         const localSymbol = this.symbolFinder.findSymbolAtPosition(fileInfo, position, word);
         if (localSymbol) {
-            // 判断position是否在identity区间，如果是返回null
             if (position.isAfterOrEqual(localSymbol.identifierLocation) &&
                 position.isBeforeOrEqual(new Position(
                     localSymbol.identifierLocation.line,
                     localSymbol.identifierLocation.character + localSymbol.name.length
                 ))) {
+                if (localSymbol.kind === 'method') {
+                    const mapperInfo = this.mapperManager.getMapperInfo(fileInfo.qualifiedName);
+                    if (mapperInfo) {
+                        const matchingElement = mapperInfo.elements.find(element => element.id === localSymbol.name);
+                        if (matchingElement) {
+                            return new Location(
+                                mapperInfo.uri,
+                                new Range(matchingElement.line - 1, matchingElement.column - 1, matchingElement.line - 1, matchingElement.column - 1)
+                            );
+                        }
+                    }
+                }
                 return null;
             }
+
             return new Location(
                 document.uri,
                 localSymbol.identifierLocation || localSymbol.range.start

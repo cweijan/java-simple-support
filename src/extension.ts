@@ -1,21 +1,27 @@
-import { ExtensionContext, languages, workspace } from 'vscode';
+import { ExtensionContext, languages, workspace, commands, window, Range, Selection } from 'vscode';
 import { JavaDefinitionProvider } from './providers/definitionProvider';
 import { JavaOutlineProvider } from './providers/outlineProvider';
 import { JavaFoldingProvider } from './providers/foldingProvider';
 import { JavaTypeDefinitionProvider } from './providers/typeDefinitionProvider';
 import { JavaImplementationProvider } from './providers/implementationProvider';
 import { WorkspaceManager } from './workspace/workspaceManager';
+import { MapperManager } from './workspace/mapperManager';
+import { JavaMyBatisCodeLensProvider } from './providers/codelensProvider';
 
 export function activate(context: ExtensionContext) {
 	console.log('Java Simple Support is now active!');
 
+	const mapperManager = new MapperManager();
 	const workspaceManager = new WorkspaceManager();
 
-	// 初始化工作空间解析
+	mapperManager.initialize();
 	workspaceManager.initializeWorkspace();
+
+	registerGotoMapperCommand(context);
 
 	const documentChange = workspace.onDidChangeTextDocument((event) => {
 		workspaceManager.onDocumentChange(event);
+		mapperManager.onDocumentChange(event.document);
 	});
 
 	const selector = { language: 'java' };
@@ -23,11 +29,26 @@ export function activate(context: ExtensionContext) {
 		languages.registerDocumentSymbolProvider(selector, new JavaOutlineProvider(workspaceManager)),
 		languages.registerFoldingRangeProvider(selector, new JavaFoldingProvider(workspaceManager)),
 		languages.registerTypeDefinitionProvider(selector, new JavaTypeDefinitionProvider(workspaceManager)),
-		languages.registerDefinitionProvider(selector, new JavaDefinitionProvider(workspaceManager)),
-		languages.registerImplementationProvider(selector, new JavaImplementationProvider(workspaceManager)),
+		languages.registerDefinitionProvider(selector, new JavaDefinitionProvider(workspaceManager, mapperManager)),
+		languages.registerImplementationProvider(selector, new JavaImplementationProvider(workspaceManager, mapperManager)),
+		languages.registerCodeLensProvider(selector, new JavaMyBatisCodeLensProvider(workspaceManager, mapperManager)),
 		// languages.registerCompletionItemProvider(selector, new JavaCompletionProvider(workspaceManager)),
 		documentChange
 	);
 }
 
 export function deactivate() { }
+
+
+function registerGotoMapperCommand(context: ExtensionContext) {
+	context.subscriptions.push(
+		commands.registerCommand('java-simple-support.gotoMapper', async (uri: string, range: Range, selection?: Range) => {
+			const editor = window.activeTextEditor;
+			if (editor) {
+				editor.selection = new Selection(range.start, range.start);
+				editor.revealRange(range);
+			}
+			await commands.executeCommand('vscode.open', uri, { selection });
+		})
+	);
+}
