@@ -1,4 +1,4 @@
-import { createVisitor, MethodDeclarationContext } from 'java-ast';
+import { createVisitor, MethodDeclarationContext, ConstructorDeclarationContext, InterfaceCommonBodyDeclarationContext } from 'java-ast';
 import { JavaSymbol } from '../../javaAstParser';
 import { MemberVisitor } from './memberVisitor';
 
@@ -6,6 +6,12 @@ export class MethodVisitor extends MemberVisitor {
 
     public createVisitor() {
         return createVisitor({
+            visitConstructorDeclaration: (ctx: ConstructorDeclarationContext) => {
+                const constructorSymbol = this.createSymbolWithType('method', ctx, 'void');
+                constructorSymbol.children = this.parseMethodParameters(ctx);
+                this.symbols.push(constructorSymbol);
+                return 1;
+            },
             visitMethodDeclaration: (ctx) => {
                 const returnType = ctx.typeTypeOrVoid();
                 const typeName = returnType?.text || 'void';
@@ -34,7 +40,7 @@ export class MethodVisitor extends MemberVisitor {
         });
     }
 
-    private parseMethodParameters(ctx: MethodDeclarationContext): JavaSymbol[] {
+    private parseMethodParameters(ctx: ConstructorDeclarationContext | MethodDeclarationContext | InterfaceCommonBodyDeclarationContext): JavaSymbol[] {
         const parameters: JavaSymbol[] = [];
         const formalParameters = ctx.formalParameters();
         if (formalParameters) {

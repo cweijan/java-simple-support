@@ -32,6 +32,7 @@ export interface JavaSymbol {
     range: Range;
     children?: JavaSymbol[];
     identifierLocation?: Position;
+    isConstructor?: boolean;
 }
 
 export class JavaAstParser {
