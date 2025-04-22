@@ -1,8 +1,8 @@
-import { createVisitor } from 'java-ast';
+import { ClassBodyContext, createVisitor } from 'java-ast';
 import { JavaSymbol } from '../javaAstParser';
 import { BaseVisitorContext, createBaseSymbol } from './baseVisitor';
-import { MethodVisitor } from './methodVisitor';
-import { FieldVisitor } from './fieldVisitor';
+import { MethodVisitor } from './members/methodVisitor';
+import { FieldVisitor } from './members/fieldVisitor';
 
 export class ClassVisitor {
     private context: BaseVisitorContext;
@@ -36,14 +36,16 @@ export class ClassVisitor {
         });
     }
 
-    private parseClassBody(classBody: any): JavaSymbol[] {
-        const symbols: JavaSymbol[] = [];
+    private parseClassBody(classBody: ClassBodyContext): JavaSymbol[] {
         const methodVisitor = this.methodVisitor.createVisitor();
         const fieldVisitor = this.fieldVisitor.createVisitor();
 
         methodVisitor.visit(classBody);
         fieldVisitor.visit(classBody);
 
-        return symbols;
+        return [
+            ...this.methodVisitor.getSymbols(),
+            ...this.fieldVisitor.getSymbols()
+        ];
     }
 } 

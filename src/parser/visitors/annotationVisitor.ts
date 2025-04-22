@@ -1,7 +1,7 @@
-import { createVisitor } from 'java-ast';
+import { AnnotationTypeBodyContext, createVisitor } from 'java-ast';
 import { JavaSymbol } from '../javaAstParser';
 import { BaseVisitorContext, createBaseSymbol } from './baseVisitor';
-import { MethodVisitor } from './methodVisitor';
+import { MethodVisitor } from './members/methodVisitor';
 
 export class AnnotationVisitor {
     private context: BaseVisitorContext;
@@ -33,12 +33,9 @@ export class AnnotationVisitor {
         });
     }
 
-    private parseAnnotationBody(annotationBody: any): JavaSymbol[] {
-        const symbols: JavaSymbol[] = [];
+    private parseAnnotationBody(annotationBody: AnnotationTypeBodyContext): JavaSymbol[] {
         const methodVisitor = this.methodVisitor.createVisitor();
-
         methodVisitor.visit(annotationBody);
-
-        return symbols;
+        return this.methodVisitor.getSymbols();
     }
 } 

@@ -55,7 +55,6 @@ export class JavaAstParser {
         const text = this.document.getText();
         const ast = parse(text);
 
-        let typeSymbol: JavaSymbol;
         let packageName = '';
         const importInfos: ImportInfo[] = [];
         const symbols: JavaSymbol[] = [];
@@ -92,7 +91,7 @@ export class JavaAstParser {
         annotationVisitor.createVisitor().visit(ast);
 
         const modulePath = this.calculateModulePath(this.document.uri.fsPath, packageName);
-        typeSymbol = symbols.find(s => ['class', 'enum', 'interface', 'annotation'].includes(s.kind));
+        const typeSymbol = symbols[0];
 
         if (!typeSymbol) return undefined;
         return {

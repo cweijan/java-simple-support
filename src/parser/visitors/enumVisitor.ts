@@ -1,30 +1,9 @@
 import { createVisitor } from 'java-ast';
 import { JavaSymbol } from '../javaAstParser';
 import { BaseVisitorContext, createBaseSymbol } from './baseVisitor';
-import { MethodVisitor } from './methodVisitor';
-import { FieldVisitor } from './fieldVisitor';
-
-class EnumConstantVisitor {
-    private context: BaseVisitorContext;
-
-    constructor(context: BaseVisitorContext) {
-        this.context = context;
-    }
-
-    public createVisitor() {
-        return createVisitor({
-            visitEnumConstant: (ctx) => {
-                const enumConstantSymbol = {
-                    ...createBaseSymbol('enum', ctx, this.context.document),
-                    children: []
-                } as JavaSymbol;
-
-                this.context.symbols.push(enumConstantSymbol);
-                return 1;
-            }
-        });
-    }
-}
+import { MethodVisitor } from './members/methodVisitor';
+import { FieldVisitor } from './members/fieldVisitor';
+import { EnumConstantVisitor } from './members/enumConstantVisitor';
 
 export class EnumVisitor {
     private context: BaseVisitorContext;
@@ -66,20 +45,22 @@ export class EnumVisitor {
     }
 
     private parseEnumConstants(enumConstants: any): JavaSymbol[] {
-        const symbols: JavaSymbol[] = [];
         const visitor = this.enumConstantVisitor.createVisitor();
         visitor.visit(enumConstants);
-        return symbols;
+        return this.enumConstantVisitor.getSymbols();
     }
 
     private parseEnumBody(enumBody: any): JavaSymbol[] {
-        const symbols: JavaSymbol[] = [];
         const methodVisitor = this.methodVisitor.createVisitor();
         const fieldVisitor = this.fieldVisitor.createVisitor();
 
         methodVisitor.visit(enumBody);
         fieldVisitor.visit(enumBody);
 
-        return symbols;
+        return [
+            ...this.methodVisitor.getSymbols(),
+            ...this.fieldVisitor.getSymbols()
+        ];
     }
-} 
+}
+

@@ -1,14 +1,9 @@
 import { createVisitor } from 'java-ast';
-import { JavaSymbol } from '../javaAstParser';
-import { BaseVisitorContext, createBaseSymbol } from './baseVisitor';
+import { JavaSymbol } from '../../javaAstParser';
+import { createBaseSymbol } from '../baseVisitor';
+import { MemberVisitor } from './memberVisitor';
 
-export class FieldVisitor {
-    private context: BaseVisitorContext;
-
-    constructor(context: BaseVisitorContext) {
-        this.context = context;
-    }
-
+export class FieldVisitor extends MemberVisitor {
     public createVisitor() {
         return createVisitor({
             visitFieldDeclaration: (ctx) => {
@@ -18,7 +13,7 @@ export class FieldVisitor {
                     const fieldSymbol = {
                         ...createBaseSymbol('field', ctx, this.context.document)
                     } as JavaSymbol;
-                    this.context.symbols.push(fieldSymbol);
+                    this.symbols.push(fieldSymbol);
                 }
                 return 1;
             }

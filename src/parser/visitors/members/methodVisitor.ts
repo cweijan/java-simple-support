@@ -1,13 +1,9 @@
 import { createVisitor, MethodDeclarationContext } from 'java-ast';
-import { JavaSymbol } from '../javaAstParser';
-import { BaseVisitorContext, createBaseSymbol } from './baseVisitor';
+import { JavaSymbol } from '../../javaAstParser';
+import { createBaseSymbol } from '../baseVisitor';
+import { MemberVisitor } from './memberVisitor';
 
-export class MethodVisitor {
-    private context: BaseVisitorContext;
-
-    constructor(context: BaseVisitorContext) {
-        this.context = context;
-    }
+export class MethodVisitor extends MemberVisitor {
 
     public createVisitor() {
         return createVisitor({
@@ -20,7 +16,7 @@ export class MethodVisitor {
                     ]
                 } as JavaSymbol;
 
-                this.context.symbols.push(methodSymbol);
+                this.symbols.push(methodSymbol);
                 return 1;
             },
             visitInterfaceCommonBodyDeclaration: (ctx) => {
@@ -29,7 +25,7 @@ export class MethodVisitor {
                     children: this.parseMethodParameters(ctx)
                 } as JavaSymbol;
 
-                this.context.symbols.push(methodSymbol);
+                this.symbols.push(methodSymbol);
                 return 1;
             },
             visitAnnotationMethodRest: (ctx) => {
@@ -38,7 +34,7 @@ export class MethodVisitor {
                     children: []
                 } as JavaSymbol;
 
-                this.context.symbols.push(methodSymbol);
+                this.symbols.push(methodSymbol);
                 return 1;
             }
         });
