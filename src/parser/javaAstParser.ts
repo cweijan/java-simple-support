@@ -11,6 +11,7 @@ export type JavaSymbolKind = 'class' | 'method' | 'field' | 'parameter' | 'enum'
 export interface ImportInfo {
     identifier: string;
     qualifiedName: string;
+    range: Range;
 }
 
 export interface JavaFileInfo {
@@ -76,9 +77,12 @@ export class JavaAstParser {
             },
             visitImportDeclaration: (ctx) => {
                 const qualifiedName = ctx.qualifiedName().text;
+                const start = new Position(ctx.start.line - 1, ctx.start.charPositionInLine);
+                const end = new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine + ctx.stop.text.length);
                 importInfos.push({
                     identifier: qualifiedName.substring(qualifiedName.lastIndexOf('.') + 1),
-                    qualifiedName: qualifiedName
+                    qualifiedName: qualifiedName,
+                    range: new Range(start, end)
                 });
                 return 1;
             }
