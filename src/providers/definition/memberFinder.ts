@@ -33,7 +33,7 @@ export class MemberFinder {
 
     private findMemberInSymbols(symbols: JavaSymbol[], memberName: string, lombokFieldName: string, uri: string): Location | undefined {
         for (const symbol of symbols) {
-            if (symbol.name === memberName && (symbol.kind === 'method' || symbol.kind === 'field')) {
+            if (symbol.name === memberName && ['method', 'field', 'enum'].includes(symbol.kind)) {
                 return new Location(Uri.parse(uri), symbol.range);
             } else if (symbol.name === lombokFieldName && symbol.kind === 'field') {
                 return new Location(Uri.parse(uri), symbol.range);
