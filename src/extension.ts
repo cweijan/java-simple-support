@@ -3,6 +3,7 @@ import { JavaDefinitionProvider } from './providers/definitionProvider';
 import { JavaOutlineProvider } from './providers/outlineProvider';
 import { JavaFoldingProvider } from './providers/foldingProvider';
 import { JavaTypeDefinitionProvider } from './providers/typeDefinitionProvider';
+import { JavaImplementationProvider } from './providers/implementationProvider';
 import { WorkspaceManager } from './workspace/workspaceManager';
 
 export function activate(context: ExtensionContext) {
@@ -20,9 +21,10 @@ export function activate(context: ExtensionContext) {
 	const selector = { language: 'java' };
 	context.subscriptions.push(
 		languages.registerDocumentSymbolProvider(selector, new JavaOutlineProvider(workspaceManager)),
-		languages.registerDefinitionProvider(selector, new JavaDefinitionProvider(workspaceManager)),
-		languages.registerTypeDefinitionProvider(selector, new JavaTypeDefinitionProvider(workspaceManager)),
 		languages.registerFoldingRangeProvider(selector, new JavaFoldingProvider(workspaceManager)),
+		languages.registerTypeDefinitionProvider(selector, new JavaTypeDefinitionProvider(workspaceManager)),
+		languages.registerDefinitionProvider(selector, new JavaDefinitionProvider(workspaceManager)),
+		languages.registerImplementationProvider(selector, new JavaImplementationProvider(workspaceManager)),
 		// languages.registerCompletionItemProvider(selector, new JavaCompletionProvider(workspaceManager)),
 		documentChange
 	);
