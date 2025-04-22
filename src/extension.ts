@@ -7,12 +7,14 @@ import { JavaImplementationProvider } from './providers/implementationProvider';
 import { WorkspaceManager } from './workspace/workspaceManager';
 import { MapperManager } from './workspace/mapperManager';
 import { JavaMyBatisCodeLensProvider } from './providers/codelensProvider';
+import { JavaDiagnosticProvider } from './providers/diagnosticProvider';
 
 export function activate(context: ExtensionContext) {
 	console.log('Java Simple Support is now active!');
 
 	const mapperManager = new MapperManager();
 	const workspaceManager = new WorkspaceManager();
+	const diagnosticProvider = new JavaDiagnosticProvider(workspaceManager);
 
 	mapperManager.initialize();
 	workspaceManager.initializeWorkspace();
@@ -22,6 +24,7 @@ export function activate(context: ExtensionContext) {
 	const documentChange = workspace.onDidChangeTextDocument((event) => {
 		workspaceManager.onDocumentChange(event);
 		mapperManager.onDocumentChange(event.document);
+		diagnosticProvider.updateDiagnostics(event.document);
 	});
 
 	const selector = { language: 'java' };
@@ -33,7 +36,8 @@ export function activate(context: ExtensionContext) {
 		languages.registerImplementationProvider(selector, new JavaImplementationProvider(workspaceManager, mapperManager)),
 		languages.registerCodeLensProvider(selector, new JavaMyBatisCodeLensProvider(workspaceManager, mapperManager)),
 		// languages.registerCompletionItemProvider(selector, new JavaCompletionProvider(workspaceManager)),
-		documentChange
+		documentChange,
+		diagnosticProvider
 	);
 }
 

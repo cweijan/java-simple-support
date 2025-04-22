@@ -13,16 +13,44 @@ import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor
 import { ParseTreeVisitor } from 'antlr4ts/tree/ParseTreeVisitor';
 import { RuleNode } from 'antlr4ts/tree/RuleNode';
 
+export interface ParseError {
+  line: number;
+  char: number;
+  message: string;
+}
+
+export interface ParseResult {
+  ast: ParseTree;
+  errors: ParseError[];
+}
+
 /**
- * Parses the given source code and returns the AST
+ * Parses the given source code and returns the AST and any parsing errors
  * @param source Java source code to parse
  */
-export function parse(source: string): ParseTree {
+export function parse(source: string): ParseResult {
   const chars = new ANTLRInputStream(source);
   const lexer = new JavaLexer(chars);
   const tokens = new CommonTokenStream(lexer);
   const parser = new JavaParser(tokens);
-  return parser.compilationUnit();
+
+  // Collect errors
+  const errors: ParseError[] = [];
+  parser.removeErrorListeners();
+  parser.addErrorListener({
+    syntaxError: (recognizer, offendingSymbol, line, charPositionInLine, msg) => {
+      if (msg) {
+        errors.push({
+          line,
+          char: charPositionInLine,
+          message: msg,
+        });
+      }
+    }
+  });
+
+  const ast = parser.compilationUnit();
+  return { ast, errors };
 }
 
 // Just to create a more user-friendly name as all arguments that are name 'tree' take this

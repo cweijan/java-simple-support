@@ -1,4 +1,4 @@
-import { parse, createVisitor } from '@/parser/java-ast';
+import { parse, createVisitor, ParseError } from '@/parser/java-ast';
 import { TextDocument, Range, Position } from 'vscode';
 import { ClassVisitor } from './visitors/classVisitor';
 import { EnumVisitor } from './visitors/enumVisitor';
@@ -23,6 +23,7 @@ export interface JavaFileInfo {
     symbols: JavaSymbol[];
     filePath: string;
     uri: string;
+    errors?: ParseError[];
 }
 
 export interface JavaSymbol {
@@ -57,7 +58,7 @@ export class JavaAstParser {
 
     public parse(): JavaFileInfo {
         const text = this.document.getText();
-        const ast = parse(text);
+        const { ast, errors } = parse(text);
 
         let packageName = '';
         const importInfos: ImportInfo[] = [];
@@ -102,6 +103,7 @@ export class JavaAstParser {
 
         if (!typeSymbol) return undefined;
         return {
+            errors,
             modulePath,
             packageName,
             importInfos,
