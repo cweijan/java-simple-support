@@ -2,14 +2,17 @@ import { createVisitor, InterfaceBodyContext } from '@/parser/java-ast';
 import { JavaSymbol } from '../javaAstParser';
 import { BaseVisitorContext, createBaseSymbol } from './baseVisitor';
 import { MethodVisitor } from './members/methodVisitor';
+import { FieldVisitor } from './members/fieldVisitor';
 
 export class InterfaceVisitor {
     private context: BaseVisitorContext;
     private methodVisitor: MethodVisitor;
+    private fieldVisitor: FieldVisitor;
 
     constructor(context: BaseVisitorContext) {
         this.context = context;
         this.methodVisitor = new MethodVisitor(context);
+        this.fieldVisitor = new FieldVisitor(context);
     }
 
     public createVisitor() {
@@ -35,7 +38,14 @@ export class InterfaceVisitor {
 
     private parseInterfaceBody(interfaceBody: InterfaceBodyContext): JavaSymbol[] {
         const methodVisitor = this.methodVisitor.createVisitor();
+        const fieldVisitor = this.fieldVisitor.createVisitor();
+
         methodVisitor.visit(interfaceBody);
-        return this.methodVisitor.getSymbols();
+        fieldVisitor.visit(interfaceBody);
+
+        return [
+            ...this.methodVisitor.getSymbols(),
+            ...this.fieldVisitor.getSymbols()
+        ];
     }
 } 

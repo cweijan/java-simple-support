@@ -14,6 +14,16 @@ export class FieldVisitor extends MemberVisitor {
                     this.symbols.push(fieldSymbol);
                 }
                 return 1;
+            },
+            visitConstDeclaration: (ctx) => {
+                const typeType = ctx.typeType();
+                const typeName = typeType?.text || '';
+
+                for (const declarator of ctx.constantDeclarator()) {
+                    const fieldSymbol = this.createSymbolWithType('const', declarator, typeName);
+                    this.symbols.push(fieldSymbol);
+                }
+                return 1;
             }
         });
     }
