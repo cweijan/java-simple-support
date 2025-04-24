@@ -12,8 +12,10 @@ export class MemberFinder {
             lombokFieldName = lombokFieldName.charAt(0).toLowerCase() + lombokFieldName.slice(1);
         }
         for (const importInfo of currentFileInfo.importInfos) {
-            if (importInfo.identifier === className) {
-                const fileInfo = this.workspaceManager.get(currentFileInfo.modulePath, importInfo.qualifiedName);
+            const isWildcardImport = importInfo.identifier === '*';
+            if (importInfo.identifier === className || isWildcardImport) {
+                const qualifiedName = isWildcardImport ? importInfo.qualifiedName.replace(/\*/g, className) : importInfo.qualifiedName;
+                const fileInfo = this.workspaceManager.get(currentFileInfo.modulePath, qualifiedName);
                 if (fileInfo) {
                     return this.findMemberInSymbols(fileInfo.symbols, memberName, lombokFieldName, fileInfo.uri);
                 }

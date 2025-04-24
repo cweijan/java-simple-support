@@ -80,7 +80,12 @@ export class JavaAstParser {
                 return 1;
             },
             visitImportDeclaration: (ctx) => {
-                const qualifiedName = ctx.qualifiedName().text;
+                const qualifiedName = ctx.children
+                    .filter((child, index, arr) => {
+                        if (index === 0 && child.text === 'import') return false;
+                        if (index === arr.length - 1 && child.text === ';') return false;
+                        return true;
+                    }).map(child => child.text).join('');
                 const start = new Position(ctx.start.line - 1, ctx.start.charPositionInLine);
                 const end = new Position(ctx.stop.line - 1, ctx.stop.charPositionInLine + ctx.stop.text.length);
                 importInfos.push({

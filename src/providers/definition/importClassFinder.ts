@@ -8,8 +8,10 @@ export class ImportClassFinder {
     public findImportedClass(fileInfo: JavaFileInfo, identifier: string): Location | undefined {
         // 检查导入的类
         for (const importInfo of fileInfo.importInfos) {
-            if (importInfo.identifier === identifier) {
-                const importedFileInfo = this.workspaceManager.get(fileInfo.modulePath, importInfo.qualifiedName);
+            const isWildcardImport = importInfo.identifier === '*';
+            if (importInfo.identifier === identifier || isWildcardImport) {
+                const qualifiedName = isWildcardImport ? importInfo.qualifiedName.replace(/\*/g, identifier) : importInfo.qualifiedName;
+                const importedFileInfo = this.workspaceManager.get(fileInfo.modulePath, qualifiedName);
                 if (importedFileInfo) {
                     return this.createLocation(importedFileInfo);
                 }
