@@ -45,6 +45,14 @@ export class JavaDefinitionProvider implements DefinitionProvider {
                 const typeNameRange = document.getWordRangeAtPosition(new Position(position.line, wordRange.start.character - 2));
                 if (typeNameRange) {
                     const typeName = document.getText(typeNameRange);
+                    if (typeName == 'this') {
+                        const symbol = this.symbolFinder.findSymbolAtPosition(fileInfo, typeNameRange.start, word, { breadthFirst: true });
+                        if (symbol) {
+                            return new Location(document.uri, symbol.range);
+                        }
+                        return undefined;
+                    }
+
                     const typeSymbol = this.symbolFinder.findSymbolAtPosition(fileInfo, typeNameRange.start, typeName);
                     const target = typeSymbol?.typeName || typeName;
                     return this.memberFinder.findMember(fileInfo, word, target);
