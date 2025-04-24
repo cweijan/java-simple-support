@@ -1,4 +1,4 @@
-import { DefinitionProvider, TextDocument, Position, Definition, Location, CancellationToken, Range } from 'vscode';
+import { DefinitionProvider, TextDocument, Position, Definition, Location, CancellationToken, Range, SymbolKind } from 'vscode';
 import { WorkspaceManager } from '../workspace/workspaceManager';
 import { SymbolFinder } from './definition/symbolFinder';
 import { ImportClassFinder } from './definition/importClassFinder';
@@ -60,7 +60,7 @@ export class JavaDefinitionProvider implements DefinitionProvider {
                     localSymbol.identifierLocation.line,
                     localSymbol.identifierLocation.character + localSymbol.name.length
                 ))) {
-                if (localSymbol.kind === 'method') {
+                if (localSymbol.kind === SymbolKind.Method) {
                     const mapperInfo = this.mapperManager.getMapperInfo(fileInfo.qualifiedName);
                     if (mapperInfo) {
                         const matchingElement = mapperInfo.elements.find(element => element.id === localSymbol.name);

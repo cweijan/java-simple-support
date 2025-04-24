@@ -2,6 +2,7 @@ import { AnnotationTypeBodyContext, createVisitor } from '@/parser/java-ast';
 import { JavaSymbol } from '../javaAstParser';
 import { BaseVisitorContext, createBaseSymbol } from './baseVisitor';
 import { MethodVisitor } from './members/methodVisitor';
+import { SymbolKind } from 'vscode';
 
 export class AnnotationVisitor {
     private context: BaseVisitorContext;
@@ -16,7 +17,7 @@ export class AnnotationVisitor {
         return createVisitor({
             visitAnnotationTypeDeclaration: (ctx) => {
                 const annotationSymbol = {
-                    ...createBaseSymbol('annotation', ctx, this.context.document),
+                    ...createBaseSymbol(SymbolKind.Interface, ctx, this.context.document),
                     children: []
                 } as JavaSymbol;
 

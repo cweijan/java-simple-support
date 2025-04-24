@@ -3,6 +3,7 @@ import { JavaSymbol } from '../javaAstParser';
 import { BaseVisitorContext, createBaseSymbol } from './baseVisitor';
 import { MethodVisitor } from './members/methodVisitor';
 import { FieldVisitor } from './members/fieldVisitor';
+import { SymbolKind } from 'vscode';
 
 export class ClassVisitor {
     private context: BaseVisitorContext;
@@ -19,7 +20,7 @@ export class ClassVisitor {
         return createVisitor({
             visitClassDeclaration: (ctx) => {
                 const classSymbol = {
-                    ...createBaseSymbol('class', ctx, this.context.document),
+                    ...createBaseSymbol(SymbolKind.Class, ctx, this.context.document),
                     children: []
                 } as JavaSymbol;
 

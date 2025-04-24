@@ -1,4 +1,4 @@
-import { DocumentSymbolProvider, TextDocument, SymbolInformation, SymbolKind, CancellationToken, Location } from 'vscode';
+import { DocumentSymbolProvider, TextDocument, SymbolInformation, CancellationToken, Location } from 'vscode';
 import { WorkspaceManager } from '../workspace/workspaceManager';
 import { JavaSymbol } from '../parser/javaAstParser';
 
@@ -17,7 +17,7 @@ export class JavaOutlineProvider implements DocumentSymbolProvider {
         const result: SymbolInformation[] = [];
 
         const processSymbol = (symbol: JavaSymbol, containerName?: string) => {
-            const kind = this.getSymbolKind(symbol.kind);
+            const kind = symbol.kind;
             const symbolInfo = new SymbolInformation(
                 symbol.name,
                 kind,
@@ -40,18 +40,4 @@ export class JavaOutlineProvider implements DocumentSymbolProvider {
         return result;
     }
 
-    private getSymbolKind(kind: string): SymbolKind {
-        switch (kind) {
-            case 'class':
-                return SymbolKind.Class;
-            case 'method':
-                return SymbolKind.Method;
-            case 'field':
-                return SymbolKind.Field;
-            case 'enum':
-                return SymbolKind.Enum;
-            default:
-                return SymbolKind.Variable;
-        }
-    }
 } 

@@ -1,4 +1,4 @@
-import { CodeLens, CodeLensProvider, TextDocument, CancellationToken, Range, Command } from 'vscode';
+import { CodeLens, CodeLensProvider, TextDocument, CancellationToken, Range, Command, SymbolKind } from 'vscode';
 import { WorkspaceManager } from '../workspace/workspaceManager';
 import { MapperInfo, MapperManager } from 'src/workspace/mapperManager';
 import { JavaSymbol } from '../parser/javaAstParser';
@@ -24,7 +24,7 @@ export class JavaMyBatisCodeLensProvider implements CodeLensProvider {
 
     private processSymbols(symbols: JavaSymbol[], mapperInfo: MapperInfo, codeLenses: CodeLens[]): void {
         for (const symbol of symbols) {
-            if (symbol.kind === 'interface') {
+            if (symbol.kind === SymbolKind.Interface) {
                 const range = new Range(
                     symbol.identifierLocation.line,
                     symbol.identifierLocation.character,
@@ -37,7 +37,7 @@ export class JavaMyBatisCodeLensProvider implements CodeLensProvider {
                     arguments: [mapperInfo.uri, range]
                 };
                 codeLenses.push(new CodeLens(range, command));
-            } else if (symbol.kind === 'method') {
+            } else if (symbol.kind === SymbolKind.Method) {
                 const matchingElement = mapperInfo.elements.find(element => element.id === symbol.name);
                 if (matchingElement) {
                     const range = new Range(

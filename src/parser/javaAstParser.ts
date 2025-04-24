@@ -1,12 +1,10 @@
 import { parse, createVisitor, ParseError } from '@/parser/java-ast';
-import { TextDocument, Range, Position } from 'vscode';
+import { TextDocument, Range, Position, SymbolKind } from 'vscode';
 import { ClassVisitor } from './visitors/classVisitor';
 import { EnumVisitor } from './visitors/enumVisitor';
 import { InterfaceVisitor } from './visitors/interfaceVisitor';
 import { AnnotationVisitor } from './visitors/annotationVisitor';
 import { BaseVisitorContext } from './visitors/baseVisitor';
-
-export type JavaSymbolKind = 'class' | 'method' | 'field' | 'const' | 'parameter' | 'enum' | 'interface' | 'annotation' | 'localVariable';
 
 export interface ImportInfo {
     identifier: string;
@@ -29,7 +27,7 @@ export interface JavaFileInfo {
 export interface JavaSymbol {
     name: string;
     typeName?: string;
-    kind: JavaSymbolKind;
+    kind: SymbolKind;
     range: Range;
     children?: JavaSymbol[];
     identifierLocation?: Position;

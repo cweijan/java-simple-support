@@ -1,13 +1,14 @@
 import { createVisitor, MethodDeclarationContext, ConstructorDeclarationContext, InterfaceCommonBodyDeclarationContext } from '@/parser/java-ast';
 import { JavaSymbol } from '../../javaAstParser';
 import { MemberVisitor } from './memberVisitor';
+import { SymbolKind } from 'vscode';
 
 export class MethodVisitor extends MemberVisitor {
 
     public createVisitor() {
         return createVisitor({
             visitConstructorDeclaration: (ctx: ConstructorDeclarationContext) => {
-                const constructorSymbol = this.createSymbolWithType('method', ctx, 'void');
+                const constructorSymbol = this.createSymbolWithType(SymbolKind.Constructor, ctx, 'void');
                 constructorSymbol.children = this.parseMethodParameters(ctx);
                 this.symbols.push(constructorSymbol);
                 return 1;
@@ -15,7 +16,7 @@ export class MethodVisitor extends MemberVisitor {
             visitMethodDeclaration: (ctx) => {
                 const returnType = ctx.typeTypeOrVoid();
                 const typeName = returnType?.text || 'void';
-                const methodSymbol = this.createSymbolWithType('method', ctx, typeName);
+                const methodSymbol = this.createSymbolWithType(SymbolKind.Method, ctx, typeName);
                 methodSymbol.children = [
                     ...this.parseMethodParameters(ctx),
                     ...this.parseLocalVariables(ctx),
@@ -27,13 +28,13 @@ export class MethodVisitor extends MemberVisitor {
             visitInterfaceCommonBodyDeclaration: (ctx) => {
                 const returnType = ctx.typeTypeOrVoid();
                 const typeName = returnType?.text || 'void';
-                const methodSymbol = this.createSymbolWithType('method', ctx, typeName);
+                const methodSymbol = this.createSymbolWithType(SymbolKind.Method, ctx, typeName);
                 methodSymbol.children = this.parseMethodParameters(ctx);
                 this.symbols.push(methodSymbol);
                 return 1;
             },
             visitAnnotationMethodRest: (ctx) => {
-                const methodSymbol = this.createSymbolWithType('method', ctx, 'void');
+                const methodSymbol = this.createSymbolWithType(SymbolKind.Method, ctx, 'void');
                 methodSymbol.children = [];
                 this.symbols.push(methodSymbol);
                 return 1;
@@ -51,7 +52,7 @@ export class MethodVisitor extends MemberVisitor {
                     const typeType = param.typeType();
                     const typeName = typeType?.text || '';
                     const ctx = param.variableDeclaratorId();
-                    const parameterSymbol = this.createSymbolWithType('parameter', ctx, typeName);
+                    const parameterSymbol = this.createSymbolWithType(SymbolKind.Variable, ctx, typeName);
                     parameters.push(parameterSymbol);
                 }
             }
@@ -73,7 +74,7 @@ export class MethodVisitor extends MemberVisitor {
                         for (const declarator of variableDeclarators.variableDeclarator()) {
                             const variableDeclaratorId = declarator.variableDeclaratorId();
                             if (variableDeclaratorId) {
-                                const localVariableSymbol = this.createSymbolWithType('localVariable', variableDeclaratorId, typeName);
+                                const localVariableSymbol = this.createSymbolWithType(SymbolKind.Variable, variableDeclaratorId, typeName);
                                 localVariables.push(localVariableSymbol);
                             }
                         }
@@ -94,7 +95,7 @@ export class MethodVisitor extends MemberVisitor {
                     const typeName = typeType?.text || '';
                     const variableDeclaratorId = ctx.variableDeclaratorId();
                     if (variableDeclaratorId) {
-                        const localVariableSymbol = this.createSymbolWithType('localVariable', variableDeclaratorId, typeName);
+                        const localVariableSymbol = this.createSymbolWithType(SymbolKind.Variable, variableDeclaratorId, typeName);
                         loopVariables.push(localVariableSymbol);
                     }
                     return 1;

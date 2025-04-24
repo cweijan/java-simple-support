@@ -1,4 +1,4 @@
-import { CompletionItemProvider, TextDocument, Position, CompletionItem, CompletionItemKind, CancellationToken } from 'vscode';
+import { CompletionItemProvider, TextDocument, Position, CompletionItem, CompletionItemKind, CancellationToken, SymbolKind } from 'vscode';
 import { WorkspaceManager } from '../workspace/workspaceManager';
 
 export class JavaCompletionProvider implements CompletionItemProvider {
@@ -37,14 +37,20 @@ export class JavaCompletionProvider implements CompletionItemProvider {
         return items;
     }
 
-    private getCompletionKind(kind: string): CompletionItemKind {
+    private getCompletionKind(kind: SymbolKind): CompletionItemKind {
         switch (kind) {
-            case 'class':
+            case SymbolKind.Class:
                 return CompletionItemKind.Class;
-            case 'method':
+            case SymbolKind.Method:
                 return CompletionItemKind.Method;
-            case 'field':
+            case SymbolKind.Field:
                 return CompletionItemKind.Field;
+            case SymbolKind.Constant:
+                return CompletionItemKind.Constant;
+            case SymbolKind.Enum:
+                return CompletionItemKind.Enum;
+            case SymbolKind.Interface:
+                return CompletionItemKind.Interface;
             default:
                 return CompletionItemKind.Variable;
         }

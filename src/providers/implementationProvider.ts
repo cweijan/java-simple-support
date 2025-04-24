@@ -1,4 +1,4 @@
-import { ImplementationProvider, TextDocument, Position, Location, CancellationToken, Range } from 'vscode';
+import { ImplementationProvider, TextDocument, Position, Location, CancellationToken, Range, SymbolKind } from 'vscode';
 import { WorkspaceManager } from '../workspace/workspaceManager';
 import { SymbolFinder } from './definition/symbolFinder';
 import { ImportClassFinder } from './definition/importClassFinder';
@@ -56,14 +56,12 @@ export class JavaImplementationProvider implements ImplementationProvider {
 
         const localSymbol = this.symbolFinder.findSymbolAtPosition(fileInfo, position, word);
         if (localSymbol) {
-
             if (position.isAfterOrEqual(localSymbol.identifierLocation) &&
                 position.isBeforeOrEqual(new Position(
                     localSymbol.identifierLocation.line,
                     localSymbol.identifierLocation.character + localSymbol.name.length
                 ))) {
-
-                if (localSymbol.kind === 'method') {
+                if (localSymbol.kind === SymbolKind.Method) {
                     const mapperInfo = this.mapperManager.getMapperInfo(fileInfo.qualifiedName);
                     if (mapperInfo) {
                         const matchingElement = mapperInfo.elements.find(element => element.id === localSymbol.name);
@@ -75,7 +73,6 @@ export class JavaImplementationProvider implements ImplementationProvider {
                         }
                     }
                 }
-
                 return null;
             }
 

@@ -4,6 +4,7 @@ import { BaseVisitorContext, createBaseSymbol } from './baseVisitor';
 import { MethodVisitor } from './members/methodVisitor';
 import { FieldVisitor } from './members/fieldVisitor';
 import { EnumConstantVisitor } from './members/enumConstantVisitor';
+import { SymbolKind } from 'vscode';
 
 export class EnumVisitor {
     private context: BaseVisitorContext;
@@ -22,7 +23,7 @@ export class EnumVisitor {
         return createVisitor({
             visitEnumDeclaration: (ctx) => {
                 const enumSymbol = {
-                    ...createBaseSymbol('enum', ctx, this.context.document),
+                    ...createBaseSymbol(SymbolKind.Enum, ctx, this.context.document),
                     children: []
                 } as JavaSymbol;
 

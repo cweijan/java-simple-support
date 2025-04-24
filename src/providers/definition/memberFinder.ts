@@ -1,4 +1,4 @@
-import { Position, Location, Uri } from 'vscode';
+import { Position, Location, Uri, SymbolKind } from 'vscode';
 import { TextDocument } from 'vscode';
 import { WorkspaceManager } from '../../workspace/workspaceManager';
 import { JavaFileInfo, JavaSymbol } from '../../parser/javaAstParser';
@@ -35,9 +35,11 @@ export class MemberFinder {
 
     private findMemberInSymbols(symbols: JavaSymbol[], memberName: string, lombokFieldName: string, uri: string): Location | undefined {
         for (const symbol of symbols) {
-            if (symbol.name === memberName && ['method', 'field', 'enum'].includes(symbol.kind)) {
+            if (symbol.name === memberName &&
+                [SymbolKind.Method, SymbolKind.Field, SymbolKind.Constant, SymbolKind.EnumMember].includes(symbol.kind)
+            ) {
                 return new Location(Uri.parse(uri), symbol.range);
-            } else if (symbol.name === lombokFieldName && symbol.kind === 'field') {
+            } else if (symbol.name === lombokFieldName && symbol.kind === SymbolKind.Field) {
                 return new Location(Uri.parse(uri), symbol.range);
             }
 

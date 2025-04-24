@@ -1,5 +1,6 @@
-import { JavaSymbol, JavaSymbolKind } from '../../javaAstParser';
+import { JavaSymbol } from '../../javaAstParser';
 import { BaseVisitorContext, createBaseSymbol } from '../baseVisitor';
+import { SymbolKind } from 'vscode';
 
 export abstract class MemberVisitor {
     protected context: BaseVisitorContext;
@@ -13,7 +14,7 @@ export abstract class MemberVisitor {
         return this.symbols;
     }
 
-    protected createSymbolWithType(kind: JavaSymbolKind, ctx: any, typeName: string): JavaSymbol {
+    protected createSymbolWithType(kind: SymbolKind, ctx: any, typeName: string): JavaSymbol {
         return {
             ...createBaseSymbol(kind, ctx, this.context.document),
             typeName

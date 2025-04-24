@@ -1,5 +1,5 @@
-import { TextDocument, Range } from 'vscode';
-import { JavaSymbol, JavaSymbolKind } from '../javaAstParser';
+import { TextDocument, Range, SymbolKind } from 'vscode';
+import { JavaSymbol } from '../javaAstParser';
 import { ParserRuleContext } from 'antlr4ts';
 import { IdentifierContext } from '@/parser/java-ast';
 
@@ -9,7 +9,7 @@ export interface BaseVisitorContext {
 }
 
 export function createBaseSymbol<T extends ParserRuleContext>(
-    kind: JavaSymbolKind,
+    kind: SymbolKind,
     ctx: T & { identifier: () => IdentifierContext },
     document: TextDocument
 ): Partial<JavaSymbol> {
@@ -27,7 +27,7 @@ export function createBaseSymbol<T extends ParserRuleContext>(
 
 export function createSymbolFromContext(
     name: string,
-    kind: JavaSymbolKind,
+    kind: SymbolKind,
     ctx: any,
     document: TextDocument,
     identifierCtx?: any

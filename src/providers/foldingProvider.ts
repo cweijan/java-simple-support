@@ -1,4 +1,4 @@
-import { FoldingRange, FoldingRangeProvider, TextDocument } from 'vscode';
+import { FoldingRange, FoldingRangeProvider, TextDocument, SymbolKind } from 'vscode';
 import { WorkspaceManager } from '../workspace/workspaceManager';
 import { JavaSymbol } from '../parser/javaAstParser';
 
@@ -32,7 +32,7 @@ export class JavaFoldingProvider implements FoldingRangeProvider {
     private processSymbols(symbols: JavaSymbol[], ranges: FoldingRange[]): void {
         for (const symbol of symbols) {
             // 添加类型定义的折叠（类、接口、枚举等）
-            if (['class', 'interface', 'enum', 'annotation'].includes(symbol.kind)) {
+            if ([SymbolKind.Class, SymbolKind.Interface, SymbolKind.Enum, SymbolKind.Class].includes(symbol.kind)) {
                 ranges.push(new FoldingRange(
                     symbol.range.start.line,
                     symbol.range.end.line
@@ -40,7 +40,7 @@ export class JavaFoldingProvider implements FoldingRangeProvider {
             }
 
             // 添加方法的折叠
-            if (symbol.kind === 'method') {
+            if ([SymbolKind.Method, SymbolKind.Constructor].includes(symbol.kind)) {
                 ranges.push(new FoldingRange(
                     symbol.range.start.line,
                     symbol.range.end.line
