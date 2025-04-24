@@ -30,7 +30,12 @@
         "command": "java-simple-support.gotoMapper",
         "title": "Go to Mapper"
       }
-    ]
+    ],
+    "configurationDefaults": {
+      "[java]": {
+        "editor.semanticHighlighting.enabled": true
+      }
+    }
   },
   "scripts": {
     "dev": "node esbuild.js --watch",

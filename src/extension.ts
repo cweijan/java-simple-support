@@ -1,4 +1,4 @@
-import { ExtensionContext, languages, workspace, commands, window, Range, Selection } from 'vscode';
+import { ExtensionContext, languages, workspace, commands, window, Range, Selection, SemanticTokensLegend } from 'vscode';
 import { JavaDefinitionProvider } from './providers/definitionProvider';
 import { JavaOutlineProvider } from './providers/outlineProvider';
 import { JavaFoldingProvider } from './providers/foldingProvider';
@@ -8,6 +8,7 @@ import { WorkspaceManager } from './workspace/workspaceManager';
 import { MapperManager } from './workspace/mapperManager';
 import { JavaMyBatisCodeLensProvider } from './providers/codelensProvider';
 import { JavaDiagnosticProvider } from './providers/diagnosticProvider';
+import { JavaTokenProvider } from './providers/tokenProvider';
 
 export function activate(context: ExtensionContext) {
 	console.log('Java Simple Support is now active!');
@@ -28,6 +29,9 @@ export function activate(context: ExtensionContext) {
 	});
 
 	const selector = { language: 'java' };
+	const tokenTypes = ['class', 'interface', 'enum', 'function', 'variable'];
+	const tokenModifiers = ['declaration', 'documentation'];
+	const legend = new SemanticTokensLegend(tokenTypes, tokenModifiers);
 	context.subscriptions.push(
 		languages.registerDocumentSymbolProvider(selector, new JavaOutlineProvider(workspaceManager)),
 		languages.registerFoldingRangeProvider(selector, new JavaFoldingProvider(workspaceManager)),
@@ -35,6 +39,7 @@ export function activate(context: ExtensionContext) {
 		languages.registerDefinitionProvider(selector, new JavaDefinitionProvider(workspaceManager, mapperManager)),
 		languages.registerImplementationProvider(selector, new JavaImplementationProvider(workspaceManager, mapperManager)),
 		languages.registerCodeLensProvider(selector, new JavaMyBatisCodeLensProvider(workspaceManager, mapperManager)),
+		languages.registerDocumentSemanticTokensProvider(selector, new JavaTokenProvider(workspaceManager), legend),
 		// languages.registerCompletionItemProvider(selector, new JavaCompletionProvider(workspaceManager)),
 		documentChange,
 		diagnosticProvider
